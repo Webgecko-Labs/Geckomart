@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GrokMart - Buy Anything Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        header {
+            background: #007bff;
+            color: white;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 60px;
+            background: white;
+            width: 350px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+
+        .cart-dropdown.show {
+            display: block;
+        }
+
+        .cart-item {
+            display: flex;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .cart-item img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .cart-item-info {
+            flex: 1;
+            margin-left: 10px;
+        }
+
+        .cart-total {
+            padding: 15px;
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .checkout-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 0 0 8px 8px;
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 25px;
+        }
+
+        .product {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: 0.3s;
+        }
+
+        .product:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .product img {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .price {
+            font-size: 1.5em;
+            color: #28a745;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .add-to-cart {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .add-to-cart:hover {
+            background: #0056b3;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px;
+            background: #333;
+            color: white;
+            margin-top: 60px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="header-container">
+            <div class="logo">GeckoMart</div>
+            <div class="cart-icon" id="cartIcon">
+                Cart <span class="cart-count" id="cartCount">0</span>
+            </div>
+            <div class="cart-dropdown" id="cartDropdown">
+                <div id="cartItems"></div>
+                <div class="cart-total">Total: $<span id="cartTotal">0</span></div>
+                <button class="checkout-btn">Go to Checkout</button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <h1 style="text-align:center; margin:40px 0; color:#007bff; font-size:2.5em;">Welcome to GeckoMart</h1>
+        <div class="products" id="productList"></div>
+    </main>
+
+    <!-- Checkout Modal -->
+    <div id="checkout"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999; display:flex; align-items:center; justify-content:center;">
+        <div style="background:white; width:90%; max-width:500px; padding:40px; border-radius:15px; text-align:center;">
+            <h2>Checkout</h2>
+            <p style="font-size:1.4em; margin:20px 0;"><strong>Total: $</strong><span id="finalTotal">0</span></p>
+            <form id="paymentForm" style="text-align:left;">
+                <input type="text" placeholder="Full Name" required
+                    style="width:100%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:8px;"><br>
+                <input type="email" placeholder="Email" required
+                    style="width:100%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:8px;"><br>
+                <input type="tel" placeholder="Phone Number" required
+                    style="width:100%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:8px;"><br>
+                <input type="text" placeholder="Card Number (demo: 4242 4242 4242 4242)"
+                    style="width:100%; padding:12px; margin:10px 0; border:1px solid #ddd; border-radius:8px;"><br>
+                <div style="display:flex; gap:10px;">
+                    <input type="text" placeholder="MM/YY"
+                        style="flex:1; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                    <input type="text" placeholder="CVC"
+                        style="flex:1; padding:12px; border:1px solid #ddd; border-radius:8px;">
+                </div><br>
+                <button type="submit"
+                    style="background:#28a745; color:white; padding:15px; width:100%; border:none; border-radius:10px; font-size:18px; cursor:pointer;">
+                    Pay Now (Demo Mode)
+                </button>
+            </form>
+            <button onclick="document.getElementById('checkout').style.display='none'"
+                style="margin-top:15px; background:#dc3545; color:white; padding:12px 20px; border:none; border-radius:8px; cursor:pointer;">Close</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 GrokMart • Beautiful Demo Store • No real charges • Made with love</p>
+    </footer>
+
+    <script>
+        // Beautiful products with real images
+        const products = [
+            { id: 1, name: "iPhone 15 Pro", price: 999, category: "Electronics", image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-15-pro-finish-select-202309-6-7inch-blacktitanium?wid=5120&hei=2880&fmt=p-jpg&qlt=80" },
+            { id: 2, name: "AirPods Pro 2", price: 249, category: "Electronics", image: "https://www.apple.com/v/airpods-pro/n/images/meta/og__eui2mpgzwyaa_overview.png" },
+            { id: 3, name: "MacBook Pro 16″", price: 2499, category: "Electronics", image: "https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/mbp16-spaceblack-select-202310?wid=904&hei=840&fmt=jpeg&qlt=90" },
+            { id: 4, name: "Galaxy Watch 6", price: 349, category: "Electronics", image: "https://images.samsung.com/levant/galaxy-watch6/feature/galaxy-watch6-safety-mo.jpg" },
+            { id: 5, name: "Nike Air Max 270", price: 149, category: "Clothing", image: "https://static.nike.com/a/images/t_web_pdp_936_v2/f_auto/awjogtdnqxniqqk0wpgf/AIR+MAX+270.png" },
+            { id: 6, name: "Levi's 501 Jeans", price: 79, category: "Clothing", image: "https://i.ebayimg.com/images/g/S1MAAOSwzfJmdn1D/s-l1200.jpg" },
+            { id: 7, name: "Summer Floral Dress", price: 59, category: "Clothing", image: "https://shopaholics.co/cdn/shop/products/SummerFloralShortMidiDressForWomen-Shopaholics-_1_1080x.jpg?v=1644461486" },
+            { id: 8, name: "Cozy Oversized Hoodie", price: 49, category: "Clothing", image: "https://theunrivaledbrand.com/cdn/shop/files/pink-oversized-hoodie.jpg?v=1734958959&width=1445" },
+            { id: 9, name: "Atomic Habits", price: 16, category: "Books", image: "https://miro.medium.com/1*Kkac0zOIkH5AgUPfdk5-qQ.jpeg" },
+            { id: 10, name: "Clean Code", price: 39, category: "Books", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTR7BRzSMiCicUFPwEMcWwMEqBZ7ifI57cDrw&s" },
+            { id: 11, name: "Ninja Air Fryer", price: 129, category: "Home", image: "https://07a4a3f115bff5e16e10-cd4f3e09ffbcc3a9c17353140ea0a299.ssl.cf3.rackcdn.com/images/products/307AF400UK_2_1500_1500.jpg" },
+            { id: 12, name: "Instant Pot Duo", price: 99, category: "Home", image: "data:image/jpeg;base64,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" },
+            { id: 13, name: "Premium Yoga Mat", price: 34, category: "Sports", image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRz1wYSSOZ-ps7GQyx9kbNFpWSA97uxm18d7g&s" },
+            { id: 14, name: "Adjustable Dumbbells", price: 199, category: "Sports", image: "https://images-cdn.ubuy.co.in/655d82c542e9eb0e182b9b59-bowflex-selecttech-552-adjustable.jpg" },
+            { id: 15, name: "4-Person Camping Tent", price: 179, category: "Sports", image: "https://cdn.shopify.com/s/files/1/0577/6945/9877/files/BoGnSA0D3S920VWp91nQkgaosomzFp_LF67cPVPPdwugvyqp40fCc62AP4E-80iWkXzqDU.jpg?v=1750346622" },
+        ];
+
+        let cart = [];
+
+        const productList = document.getElementById('productList');
+        products.forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'product';
+            div.innerHTML = `
+        <img src="${p.image}" alt="${p.name}">
+        <div class="product-info">
+            <h3>${p.name}</h3>
+            <p style="color:#666; margin:5px 0;">${p.category}</p>
+            <div class="price">$${p.price}</div>
+            <button class="add-to-cart" onclick="addToCart(${p.id})">Add to Cart</button>
+        </div>
+    `;
+            productList.appendChild(div);
+        });
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                cart.push({ ...product, qty: 1 });
+            }
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const count = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cartCount').textContent = count;
+
+            const itemsDiv = document.getElementById('cartItems');
+            itemsDiv.innerHTML = '';
+            let total = 0;
+
+            cart.forEach(item => {
+                total += item.price * item.qty;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+            <img src="${item.image}" alt="${item.name}">
+            <div class="cart-item-info">
+                <div style="font-weight:bold;">${item.name}</div>
+                <div>$${item.price} × ${item.qty}</div>
+            </div>
+        `;
+                itemsDiv.appendChild(div);
+            });
+
+            document.getElementById('cartTotal').textContent = total.toFixed(2);
+            document.getElementById('finalTotal').textContent = total.toFixed(2);
+        }
+
+        document.getElementById('cartIcon').addEventListener('click', () => {
+            document.getElementById('cartDropdown').classList.toggle('show');
+        });
+
+        document.querySelector('.checkout-btn').addEventListener('click', () => {
+            document.getElementById('checkout').style.display = 'flex';
+            document.getElementById('cartDropdown').classList.remove('show');
+        });
+
+        document.getElementById('paymentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Payment Successful! Thank you for your purchase at GrokMart (Demo mode – no real money taken)');
+            cart = [];
+            updateCartUI();
+            document.getElementById('checkout').style.display = 'none';
+        });
+    </script>
+</body>
+
+</html>
